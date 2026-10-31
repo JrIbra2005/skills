@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Skill Studio &bull; Creador de Skills Profesionales</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- JSZip Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="claude-bg text-[#2D2A26] min-h-screen font-sans flex flex-col antialiased selection:bg-[#D97757] selection:text-white">
+
+    <!-- Header / Navbar -->
+    <header class="border-b border-[#E8E2D5] bg-[#FBF7EE]/90 backdrop-blur-md sticky top-0 z-40 px-4 sm:px-6 py-3.5 transition-colors">
+        <div class="max-w-6xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-3 cursor-pointer select-none" onclick="reiniciarBorrador()">
+                <div class="w-9 h-9 rounded-xl bg-[#D97757] flex items-center justify-center text-white shadow-sm shadow-[#D97757]/30 transition-transform hover:scale-105">
+                    <i data-lucide="sparkles" class="w-5 h-5"></i>
+                </div>
+                <div class="flex flex-col">
+                    <span class="font-serif text-2xl font-bold tracking-tight text-[#1A1816] leading-none">Claude Skill Studio</span>
+                    <span class="text-[10px] uppercase tracking-wider text-[#706B63] font-semibold mt-1" id="ui-subtitle">Creador de Skills para Claude</span>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2.5">
+                <!-- Selector de Idioma -->
+                <div class="relative inline-block text-left">
+                    <select id="language-select" onchange="cambiarIdioma(this.value)" class="appearance-none bg-[#F7F3E9] border border-[#E8E2D5] text-[#2D2A26] text-xs font-semibold rounded-lg px-3 py-1.5 pr-8 focus:outline-none focus:ring-2 focus:ring-[#D97757] cursor-pointer hover:bg-[#EFE9DB] transition-all">
+                        <option value="es">Español (ES)</option>
+                        <option value="en">English (EN)</option>
+                    </select>
+                    <i data-lucide="chevron-down" class="w-3.5 h-3.5 absolute right-2.5 top-2.5 text-[#706B63] pointer-events-none"></i>
+                </div>
+
+                <!-- Botón Reiniciar -->
+                <button onclick="confirmarReiniciar()" class="flex items-center gap-1.5 text-xs text-[#706B63] hover:text-[#1A1816] px-3 py-1.5 rounded-lg hover:bg-[#EFE9DB] transition-all" title="Reiniciar borrador" id="btn-reset">
+                    <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                    <span class="hidden sm:inline" id="lbl-reset">Reiniciar</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6 md:p-8 flex flex-col justify-center">
+
+        <!-- ========================================== -->
+        <!-- PANTALLA 1: Idea Inicial y Presets         -->
+        <!-- ========================================== -->
+        <section id="screen-intro" class="w-full max-w-4xl mx-auto space-y-6">
+            <div class="claude-card p-6 sm:p-10">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FBF0EB] text-[#D97757] text-xs font-semibold mb-4 border border-[#D97757]/20">
+                    <i data-lucide="lightbulb" class="w-3.5 h-3.5"></i>
+                    <span id="lbl-tag-intro">Diseñador de Skills</span>
+                </div>
+                
+                <h1 class="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-[#1A1816] mb-3 tracking-tight" id="title-intro">Diseña tu Skill para Claude</h1>
+                <p class="text-[#706B63] text-sm sm:text-base mb-6 leading-relaxed" id="desc-intro">
+                    Define las capacidades, instrucciones y archivos de soporte para que Claude actúe como un especialista a medida. Nosotros estructuramos el paquete en estándar Markdown oficial.
+                </p>
+
+                <div class="mb-6">
+                    <label class="block text-xs font-semibold text-[#1A1816] uppercase tracking-wider mb-2">Describe la idea en tus propias palabras:</label>
+                    <textarea id="input-idea" rows="4" class="claude-input w-full p-4 text-sm sm:text-base leading-relaxed" placeholder="Ejemplo: Quiero que Claude redacte actas de reunión profesionales a partir de notas o transcripciones, estructurando acuerdos, tareas y responsables."></textarea>
+                </div>
+
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-[#E8E2D5]">
+                    <button onclick="cargarEjemploMuestra()" class="claude-btn-secondary w-full sm:w-auto text-xs px-4 py-2.5 flex items-center justify-center gap-2" id="btn-sample">
+                        <i data-lucide="wand-2" class="w-4 h-4 text-[#D97757]"></i>
+                        <span id="lbl-sample">Usar plantilla de muestra</span>
+                    </button>
+
+                    <button onclick="comenzarWizard()" class="claude-btn-primary w-full sm:w-auto px-6 py-2.5 flex items-center justify-center gap-2 text-sm font-semibold" id="btn-start">
+                        <span id="lbl-start">Comenzar asistente</span>
+                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Selector de Plantillas / Presets -->
+            <div class="space-y-3">
+                <div class="flex items-center gap-2 text-xs font-semibold text-[#706B63] uppercase tracking-wider">
+                    <i data-lucide="layout-grid" class="w-3.5 h-3.5 text-[#D97757]"></i>
+                    <span id="presets-header-title">O elige una plantilla prediseñada para empezar más rápido:</span>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    <button onclick="cargarPreset('meeting')" class="preset-card group">
+                        <div class="flex items-center gap-2 text-[#D97757] font-semibold text-xs mb-1">
+                            <i data-lucide="file-text" class="w-4 h-4"></i>
+                            <span id="preset-lbl-meeting">Actas de Reunión</span>
+                        </div>
+                        <p class="text-[11px] text-[#706B63] leading-snug">Estructura acuerdos, participantes y tareas con responsables claros.</p>
+                    </button>
+
+                    <button onclick="cargarPreset('code')" class="preset-card group">
+                        <div class="flex items-center gap-2 text-emerald-600 font-semibold text-xs mb-1">
+                            <i data-lucide="shield-check" class="w-4 h-4"></i>
+                            <span id="preset-lbl-code">Auditor de Código</span>
+                        </div>
+                        <p class="text-[11px] text-[#706B63] leading-snug">Detección de vulnerabilidades OWASP, Clean Code y refactor seguro.</p>
+                    </button>
+
+                    <button onclick="cargarPreset('seo')" class="preset-card group">
+                        <div class="flex items-center gap-2 text-blue-600 font-semibold text-xs mb-1">
+                            <i data-lucide="pen-tool" class="w-4 h-4"></i>
+                            <span id="preset-lbl-seo">Redactor SEO</span>
+                        </div>
+                        <p class="text-[11px] text-[#706B63] leading-snug">Artículos estructurados con H1/H2/H3, tono divulgativo y meta-tags.</p>
+                    </button>
+
+                    <button onclick="cargarPreset('data')" class="preset-card group">
+                        <div class="flex items-center gap-2 text-purple-600 font-semibold text-xs mb-1">
+                            <i data-lucide="database" class="w-4 h-4"></i>
+                            <span id="preset-lbl-data">Extractor JSON</span>
+                        </div>
+                        <p class="text-[11px] text-[#706B63] leading-snug">Convierte recibos, tickets o texto desordenado a JSON estricto.</p>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- PANTALLA 2: Asistente Wizard (10 Pasos)    -->
+        <!-- ========================================== -->
+        <section id="screen-wizard" class="hidden w-full space-y-4">
+            
+            <!-- Barra de Progreso y Stepper -->
+            <div class="claude-card p-4 space-y-3">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div class="flex items-center gap-2">
+                        <span class="font-serif text-lg font-bold text-[#1A1816]" id="wizard-step-label">Paso 1 de 10</span>
+                        <span class="text-xs font-semibold text-[#D97757] bg-[#FBF0EB] px-2 py-0.5 rounded-full" id="wizard-progress-percent">10%</span>
+                    </div>
+
+                    <!-- Botón Split Live Preview -->
+                    <button onclick="alternarLivePreview()" class="claude-btn-secondary text-xs px-3 py-1.5 flex items-center gap-1.5 self-start sm:self-auto" id="btn-toggle-preview">
+                        <i data-lucide="columns" class="w-3.5 h-3.5 text-[#D97757]"></i>
+                        <span id="lbl-toggle-preview">Ver Markdown en vivo</span>
+                    </button>
+                </div>
+
+                <!-- Barra de Progreso Visual -->
+                <div class="w-full bg-[#EFE9DB] rounded-full h-2 overflow-hidden">
+                    <div id="progress-bar" class="bg-[#D97757] h-full rounded-full transition-all duration-300" style="width: 10%;"></div>
+                </div>
+
+                <!-- Stepper interactivo con navegación a cualquier paso -->
+                <div id="wizard-stepper-nav" class="flex items-center gap-1.5 overflow-x-auto pb-1 pt-1 no-scrollbar">
+                    <!-- Se inyecta con JS -->
+                </div>
+            </div>
+
+            <!-- Layout Principal: Formulario de Paso + Split Preview (Opcional) -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+                
+                <!-- Columna Formulario del Paso Actual -->
+                <div id="wizard-form-container" class="lg:col-span-12 transition-all duration-200">
+                    <div class="claude-card p-6 sm:p-8 min-h-[440px] flex flex-col justify-between">
+                        
+                        <!-- Contenedor Dinámico del Paso -->
+                        <div id="wizard-step-content" class="flex-1">
+                            <!-- Inyectado por wizard.js -->
+                        </div>
+
+                        <!-- Botones de Navegación -->
+                        <div class="flex items-center justify-between pt-6 mt-6 border-t border-[#E8E2D5]">
+                            <button id="btn-prev" onclick="pasoAnterior()" class="claude-btn-secondary px-5 py-2.5 flex items-center gap-2 text-xs sm:text-sm font-semibold">
+                                <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                                <span id="lbl-prev">Anterior</span>
+                            </button>
+
+                            <div class="flex items-center gap-2">
+                                <button id="btn-next" onclick="pasoSiguiente()" class="claude-btn-primary px-6 py-2.5 flex items-center gap-2 text-xs sm:text-sm font-semibold">
+                                    <span id="lbl-next">Siguiente</span>
+                                    <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Panel Split Live Preview (Oculto por defecto) -->
+                <div id="wizard-live-preview" class="hidden lg:col-span-5 claude-card p-5 h-full min-h-[440px] flex flex-col">
+                    <div class="flex items-center justify-between pb-3 mb-3 border-b border-[#E8E2D5]">
+                        <span class="text-xs font-bold text-[#1A1816] flex items-center gap-1.5">
+                            <i data-lucide="eye" class="w-3.5 h-3.5 text-[#D97757]"></i>
+                            Vista Previa en Vivo (SKILL.md)
+                        </span>
+                        <span class="text-[10px] text-[#706B63] font-mono">Actualizado en tiempo real</span>
+                    </div>
+                    <pre id="wizard-preview-pre" class="flex-1 bg-[#F7F3E9] p-3.5 rounded-xl text-xs font-mono text-[#2D2A26] overflow-y-auto max-h-[460px] whitespace-pre-wrap leading-relaxed border border-[#E8E2D5]"></pre>
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- ========================================== -->
+        <!-- PANTALLA 3: Resultado / Preview Final      -->
+        <!-- ========================================== -->
+        <section id="screen-result" class="hidden w-full space-y-6">
+            
+            <!-- Header Resultado -->
+            <div class="claude-card p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                    <div class="flex items-center gap-2.5 mb-1.5">
+                        <h2 class="font-serif text-3xl font-bold text-[#1A1816]" id="title-result">¡Tu Skill está lista!</h2>
+                        <span id="quality-score-badge" class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
+                            Excelente
+                        </span>
+                    </div>
+                    <p class="text-xs sm:text-sm text-[#706B63]" id="desc-result">Revisa la documentación generada, evalúa su calidad y descarga el paquete para Claude.</p>
+                </div>
+
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <button onclick="volverAlWizard()" class="claude-btn-secondary text-xs px-3.5 py-2.5 flex items-center justify-center gap-1.5 flex-1 sm:flex-initial" id="btn-edit-answers">
+                        <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                        <span id="lbl-edit">Editar respuestas</span>
+                    </button>
+                    <button onclick="generarPromptIA()" class="claude-btn-secondary text-xs px-3.5 py-2.5 flex items-center justify-center gap-1.5 flex-1 sm:flex-initial" id="btn-ai-prompt">
+                        <i data-lucide="sparkles" class="w-3.5 h-3.5 text-[#D97757]"></i>
+                        <span id="lbl-ai">Mejorar con Claude</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Panel de Auditoría de Calidad -->
+            <div class="claude-card p-6">
+                <div class="flex items-center justify-between mb-4 pb-3 border-b border-[#E8E2D5]">
+                    <h3 class="text-xs uppercase tracking-wider font-bold text-[#706B63] flex items-center gap-2" id="title-checklist">
+                        <i data-lucide="shield-check" class="w-4 h-4 text-[#D97757]"></i>
+                        Auditoría de Calidad de la Skill
+                    </h3>
+                    <div class="flex items-center gap-2 text-xs">
+                        <span class="text-[#706B63]">Puntuación de optimización:</span>
+                        <span id="quality-score-percent" class="font-bold text-[#D97757] font-mono text-sm">100%</span>
+                    </div>
+                </div>
+                <div id="quality-checklist" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5 text-xs">
+                    <!-- Se inyectan items de calidad -->
+                </div>
+            </div>
+
+            <!-- Avisos / Advertencias -->
+            <div id="warning-box" class="hidden bg-[#FFF8E7] border border-[#F3E1B9] text-[#8C6D1F] p-4 rounded-xl text-xs flex items-start gap-3">
+                <i data-lucide="alert-triangle" class="w-4 h-4 text-[#D97757] shrink-0 mt-0.5"></i>
+                <div id="warning-box-text"></div>
+            </div>
+
+            <!-- Pestañas de Contenido (Tabs) -->
+            <div class="flex items-center gap-1.5 bg-[#F7F3E9] p-1.5 rounded-xl border border-[#E8E2D5] max-w-fit">
+                <button id="btn-tab-preview" onclick="cambiarTabResultado('preview')" class="tab-btn active flex items-center gap-1.5">
+                    <i data-lucide="file-text" class="w-3.5 h-3.5 text-[#D97757]"></i>
+                    <span id="tab-label-preview">Vista previa SKILL.md</span>
+                </button>
+                <button id="btn-tab-structure" onclick="cambiarTabResultado('structure')" class="tab-btn flex items-center gap-1.5">
+                    <i data-lucide="folder-tree" class="w-3.5 h-3.5 text-[#D97757]"></i>
+                    <span id="tab-label-structure">Estructura y Archivos</span>
+                </button>
+                <button id="btn-tab-install" onclick="cambiarTabResultado('install')" class="tab-btn flex items-center gap-1.5">
+                    <i data-lucide="book-open" class="w-3.5 h-3.5 text-[#D97757]"></i>
+                    <span id="tab-label-install">Guía de Instalación</span>
+                </button>
+            </div>
+
+            <!-- Pestaña 1: Vista Previa SKILL.md -->
+            <div id="tab-content-preview" class="space-y-4">
+                <div class="claude-card p-6">
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 mb-4 border-b border-[#E8E2D5] gap-3">
+                        <div class="flex items-center gap-2">
+                            <span class="font-mono font-bold text-sm text-[#1A1816]">SKILL.md</span>
+                            <span class="badge-tag bg-[#F7F3E9] text-[#706B63]">Formato Oficial Claude</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="copiarMarkdown()" class="claude-btn-secondary text-xs px-3.5 py-1.5 flex items-center gap-1.5" id="btn-copy-md">
+                                <i data-lucide="copy" class="w-3.5 h-3.5 text-[#D97757]"></i>
+                                <span id="lbl-copy">Copiar SKILL.md</span>
+                            </button>
+                            <button onclick="descargarSoloMarkdown()" class="claude-btn-secondary text-xs px-3.5 py-1.5 flex items-center gap-1.5" id="btn-download-md">
+                                <i data-lucide="download" class="w-3.5 h-3.5 text-[#D97757]"></i>
+                                <span id="lbl-download-md">Descargar solo SKILL.md</span>
+                            </button>
+                        </div>
+                    </div>
+                    <pre id="preview-markdown" class="bg-[#F7F3E9] p-5 rounded-xl text-xs font-mono text-[#2D2A26] overflow-x-auto whitespace-pre-wrap max-h-[500px] leading-relaxed select-all border border-[#E8E2D5]"></pre>
+                </div>
+            </div>
+
+            <!-- Pestaña 2: Estructura del Paquete -->
+            <div id="tab-content-structure" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 claude-card p-6">
+                    <h3 class="text-xs uppercase tracking-wider font-bold text-[#706B63] mb-3 flex items-center gap-2" id="title-files">
+                        <i data-lucide="folder-tree" class="w-4 h-4 text-[#D97757]"></i>
+                        Estructura del paquete generado
+                    </h3>
+                    <p class="text-xs text-[#706B63] mb-4">Esta es la disposición de archivos que contendrá el archivo ZIP comprimido al descargarlo:</p>
+                    <div id="folder-tree" class="bg-[#F7F3E9] p-4 rounded-xl font-mono text-xs text-[#2D2A26] border border-[#E8E2D5] leading-relaxed">
+                        <!-- Árbol inyectado -->
+                    </div>
+                </div>
+
+                <div class="claude-card p-6 flex flex-col justify-between space-y-4">
+                    <div class="space-y-3">
+                        <h4 class="font-serif text-xl font-bold text-[#1A1816]">Descargar Paquete</h4>
+                        <p class="text-xs text-[#706B63] leading-relaxed">
+                            Obtén el archivo ZIP empaquetado con tu <code class="bg-[#F7F3E9] px-1 rounded font-mono">SKILL.md</code> y todas las subcarpetas vinculadas (<code class="font-mono">scripts/</code>, <code class="font-mono">references/</code>, <code class="font-mono">assets/</code>).
+                        </p>
+                    </div>
+
+                    <button onclick="descargarZip()" class="claude-btn-primary w-full py-3.5 flex items-center justify-center gap-2 text-sm shadow-md">
+                        <i data-lucide="download" class="w-4 h-4"></i>
+                        <span id="lbl-download-zip" class="font-semibold">Descargar Paquete (.zip)</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Pestaña 3: Guía de Instalación -->
+            <div id="tab-content-install" class="hidden claude-card p-6 sm:p-8">
+                <div id="install-guide-content" class="prose prose-sm max-w-none text-xs sm:text-sm text-[#2D2A26] leading-relaxed space-y-3">
+                    <!-- Guía inyectada -->
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-[#E8E2D5] py-6 text-center text-xs text-[#706B63] mt-12 bg-[#FBF7EE]">
+        <div class="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div class="flex items-center gap-2">
+                <span class="font-serif font-bold text-[#1A1816]">Claude Skill Studio</span>
+                <span>&bull;</span>
+                <span id="lbl-footer">Procesamiento 100% local en tu navegador. Tus datos no se envían a ningún servidor externo.</span>
+            </div>
+            <div class="text-[11px] text-[#706B63]">
+                Basado en los estándares de Skills de Anthropic
+            </div>
+        </div>
+    </footer>
+
+    <!-- Modal Prompt IA -->
+    <div id="modal-ai" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="claude-card max-w-2xl w-full p-6 space-y-4 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-[#E8E2D5] pb-3">
+                <h3 class="font-serif text-xl font-bold text-[#1A1816] flex items-center gap-2">
+                    <i data-lucide="sparkles" class="w-5 h-5 text-[#D97757]"></i>
+                    <span id="title-modal-ai">Prompt de revisión para Claude</span>
+                </h3>
+                <button onclick="cerrarModalIA()" class="text-[#706B63] hover:text-[#1A1816] p-1 rounded hover:bg-[#EFE9DB]">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <p class="text-xs text-[#706B63]" id="desc-modal-ai">
+                Copia este prompt y pégalo directamente en tu chat con Claude para obtener sugerencias avanzadas de mejora.
+            </p>
+            <textarea id="ai-prompt-text" rows="10" readonly class="w-full bg-[#F7F3E9] p-3.5 rounded-xl text-xs font-mono text-[#2D2A26] border border-[#E8E2D5] focus:outline-none"></textarea>
+            <div class="flex justify-end gap-3 pt-2">
+                <button onclick="cerrarModalIA()" class="claude-btn-secondary text-xs px-4 py-2" id="btn-close-modal">Cerrar</button>
+                <button onclick="copiarPromptIA()" class="claude-btn-primary text-xs px-4 py-2 flex items-center gap-2" id="btn-copy-ai">
+                    <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                    <span id="lbl-copy-modal">Copiar Prompt</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenedor Toast -->
+    <div id="toast-container"></div>
+
+    <!-- App Scripts -->
+    <script src="js/translations.js"></script>
+    <script src="js/helpers.js"></script>
+    <script src="js/state.js"></script>
+    <script src="js/generator.js"></script>
+    <script src="js/wizard.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

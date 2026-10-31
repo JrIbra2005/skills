@@ -1,0 +1,282 @@
+/* Estilos inspirados en la estética oficial de Anthropic / Claude */
+
+:root {
+    --claude-bg: #FBF7EE;
+    --claude-bg-soft: #F5EFE1;
+    --claude-card: #FFFFFF;
+    --claude-border: #E8E2D5;
+    --claude-border-subtle: #F0EBE0;
+    --claude-border-hover: #D5CEBF;
+    --claude-text: #2D2A26;
+    --claude-muted: #706B63;
+    --claude-dark: #1A1816;
+    --claude-accent: #D97757;
+    --claude-accent-hover: #C66343;
+    --claude-accent-light: #FBF0EB;
+    --claude-input-bg: #F7F3E9;
+    --claude-radius-lg: 1rem;
+    --claude-radius-md: 0.75rem;
+    --claude-shadow-sm: 0 1px 3px rgba(45, 42, 38, 0.05);
+    --claude-shadow-md: 0 4px 20px -2px rgba(45, 42, 38, 0.05), 0 2px 6px -1px rgba(45, 42, 38, 0.03);
+    --claude-shadow-lg: 0 12px 32px -4px rgba(45, 42, 38, 0.08), 0 4px 12px -2px rgba(45, 42, 38, 0.04);
+}
+
+body.claude-bg {
+    background-color: var(--claude-bg);
+    color: var(--claude-text);
+    background-image: radial-gradient(circle at 100% 0%, rgba(217, 119, 87, 0.03) 0%, transparent 40%),
+                      radial-gradient(circle at 0% 100%, rgba(217, 119, 87, 0.02) 0%, transparent 40%);
+    background-attachment: fixed;
+}
+
+/* Tipografía elegante de Claude */
+.font-serif {
+    font-family: 'Instrument Serif', Georgia, serif;
+}
+
+.claude-card {
+    background-color: var(--claude-card);
+    border: 1px solid var(--claude-border);
+    border-radius: var(--claude-radius-lg);
+    box-shadow: var(--claude-shadow-md);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.claude-card:hover {
+    border-color: var(--claude-border-hover);
+}
+
+/* Inputs y Áreas de Texto */
+.claude-input {
+    background-color: var(--claude-input-bg);
+    border: 1px solid var(--claude-border);
+    color: var(--claude-text);
+    border-radius: var(--claude-radius-md);
+    transition: all 0.2s ease;
+}
+
+.claude-input:hover {
+    border-color: var(--claude-border-hover);
+    background-color: #FAF6EE;
+}
+
+.claude-input:focus {
+    outline: none;
+    background-color: #FFFFFF;
+    border-color: var(--claude-accent);
+    box-shadow: 0 0 0 3px rgba(217, 119, 87, 0.15);
+}
+
+/* Botones */
+.claude-btn-primary {
+    background-color: var(--claude-accent);
+    color: #FFFFFF;
+    border-radius: var(--claude-radius-md);
+    font-weight: 500;
+    box-shadow: 0 2px 8px rgba(217, 119, 87, 0.25);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.claude-btn-primary:hover {
+    background-color: var(--claude-accent-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(217, 119, 87, 0.35);
+}
+
+.claude-btn-primary:active {
+    transform: translateY(0);
+}
+
+.claude-btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.claude-btn-secondary {
+    background-color: var(--claude-input-bg);
+    color: var(--claude-text);
+    border: 1px solid var(--claude-border);
+    border-radius: var(--claude-radius-md);
+    font-weight: 500;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.claude-btn-secondary:hover {
+    background-color: #EFE9DB;
+    border-color: var(--claude-border-hover);
+    color: var(--claude-dark);
+    transform: translateY(-0.5px);
+}
+
+.claude-btn-secondary:active {
+    transform: translateY(0);
+}
+
+/* Botón sutil / Ghost */
+.claude-btn-ghost {
+    color: var(--claude-muted);
+    border-radius: var(--claude-radius-md);
+    transition: all 0.15s ease;
+}
+
+.claude-btn-ghost:hover {
+    background-color: var(--claude-bg-soft);
+    color: var(--claude-dark);
+}
+
+/* Toast flotante de notificaciones */
+#toast-container {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    pointer-events: none;
+}
+
+.toast {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.75rem 1.125rem;
+    background-color: var(--claude-dark);
+    color: #FFFFFF;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    border-radius: 0.625rem;
+    box-shadow: var(--claude-shadow-lg);
+    pointer-events: auto;
+    animation: toast-in 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.toast.toast-leave {
+    opacity: 0;
+    transform: translateY(8px);
+}
+
+@keyframes toast-in {
+    from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Stepper horizontal interactivo */
+.step-nav-pill {
+    padding: 0.375rem 0.625rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border: 1px solid transparent;
+}
+
+.step-nav-pill.active {
+    background-color: var(--claude-dark);
+    color: #FFFFFF;
+}
+
+.step-nav-pill.completed {
+    background-color: var(--claude-accent-light);
+    color: var(--claude-accent);
+    border-color: rgba(217, 119, 87, 0.2);
+}
+
+.step-nav-pill.pending {
+    background-color: transparent;
+    color: var(--claude-muted);
+}
+
+.step-nav-pill:hover:not(.active) {
+    background-color: var(--claude-bg-soft);
+    color: var(--claude-dark);
+}
+
+/* Tarjetas de plantilla prediseñadas (Presets) */
+.preset-card {
+    background-color: var(--claude-card);
+    border: 1px solid var(--claude-border);
+    border-radius: var(--claude-radius-md);
+    padding: 0.875rem 1rem;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s ease;
+}
+
+.preset-card:hover {
+    border-color: var(--claude-accent);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(217, 119, 87, 0.12);
+}
+
+/* Pestañas de resultado */
+.tab-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    color: var(--claude-muted);
+    transition: all 0.15s ease;
+}
+
+.tab-btn.active {
+    background-color: var(--claude-card);
+    color: var(--claude-dark);
+    box-shadow: var(--claude-shadow-sm);
+}
+
+.tab-btn:hover:not(.active) {
+    color: var(--claude-dark);
+}
+
+/* Barra de progreso y badges */
+.badge-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.25rem 0.625rem;
+    border-radius: 9999px;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+/* Estilos de scrollbar personalizados */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #D5CEBF;
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #B5AD9E;
+}
+
+/* Selección de texto */
+::selection {
+    background-color: var(--claude-accent);
+    color: #FFFFFF;
+}
